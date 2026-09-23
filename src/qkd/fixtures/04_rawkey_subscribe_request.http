@@ -1,0 +1,6 @@
+GET /QKD_API/data/kt-qkd-node:raw-key HTTP/1.1
+Host: qkd-a2:8080
+Accept: text/event-stream
+Cache-Control: no-cache
+Connection: keep-alive
+

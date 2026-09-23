@@ -1,0 +1,24 @@
+{
+  "qkd-node:qkd_interfaces": [
+    {
+      "qkdi_id": "11111111-0000-4000-8000-1000000000a2",
+      "capabilities": {
+        "role_support": "receiver"
+      },
+      "interface_status": {
+        "operation_status": "ACT",
+        "admin_status": "ACT"
+      }
+    },
+    {
+      "qkdi_id": "11111111-0000-4000-8000-2000000000a2",
+      "capabilities": {
+        "role_support": "transmitter"
+      },
+      "interface_status": {
+        "operation_status": "ACT",
+        "admin_status": "ACT"
+      }
+    }
+  ]
+}

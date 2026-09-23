@@ -1,0 +1,12 @@
+POST /QKD_API/operations/qkdn-rpc-qkd-registration HTTP/1.1
+Host: qkd-a2:8080
+Content-Type: application/yang-data+json
+Accept: application/yang-data+json
+Connection: close
+Content-Length: 86
+
+{
+ "qkdn-rpc-qkd-registration:input": {
+  "qkd_alias": "q7UotM2fJ2uSm6xdq1AdiA=="
+ }
+}

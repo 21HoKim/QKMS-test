@@ -1,0 +1,8 @@
+HTTP/1.1 403 Forbidden
+Content-Type: application/yang-data+json; charset=utf-8
+Content-Length: 31
+Date: Wed, 23 Sep 2026 08:06:37 GMT
+Server: Python/3.12 aiohttp/3.14.3
+Connection: close
+
+{"error": "QKD not registered"}

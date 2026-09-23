@@ -1,0 +1,54 @@
+{
+  "_comment": "같은 raw_key_id 에 대해 qkd-a2 쪽과 qkd-b1 쪽이 받은 키. 동기화 로직 단위 테스트용",
+  "pairs": [
+    {
+      "raw_key_id": "qlink-ab:22925195",
+      "qkd-a2": "jQcc3hgI5V4MEuyfv+pN50doWUk9MgJ5yveU1yJHa0E=",
+      "qkd-b1": "jQcc3hgI5V4MEuyfv+pN50doWUk9MgJ5yveU1yJHa0E=",
+      "hex": "8d071cde1808e55e0c12ec9fbfea4de7476859493d320279caf794d722476b41",
+      "equal": true
+    },
+    {
+      "raw_key_id": "qlink-ab:22925196",
+      "qkd-a2": "dtxWRJMoBEEk4kuFSHApXhRMkQQnHmlIZ7Xv8JrZDr0=",
+      "qkd-b1": "dtxWRJMoBEEk4kuFSHApXhRMkQQnHmlIZ7Xv8JrZDr0=",
+      "hex": "76dc56449328044124e24b854870295e144c9104271e694867b5eff09ad90ebd",
+      "equal": true
+    },
+    {
+      "raw_key_id": "qlink-ab:22925197",
+      "qkd-a2": "k+km9QsTJp70NBhcEkFyoJ/6UYNTqfsxhv+YLtiI0Vs=",
+      "qkd-b1": "k+km9QsTJp70NBhcEkFyoJ/6UYNTqfsxhv+YLtiI0Vs=",
+      "hex": "93e926f50b13269ef434185c124172a09ffa518353a9fb3186ff982ed888d15b",
+      "equal": true
+    },
+    {
+      "raw_key_id": "qlink-ab:22925198",
+      "qkd-a2": "pctLgr7/U/FoCswVyb31AGbvHiBu1q4/+1wvvr5uAV8=",
+      "qkd-b1": "pctLgr7/U/FoCswVyb31AGbvHiBu1q4/+1wvvr5uAV8=",
+      "hex": "a5cb4b82beff53f1680acc15c9bdf50066ef1e206ed6ae3ffb5c2fbebe6e015f",
+      "equal": true
+    },
+    {
+      "raw_key_id": "qlink-ab:22925199",
+      "qkd-a2": "9GkWITVT6cHnG21C8WpY0YpvbwX0frjBBnTr6yG986w=",
+      "qkd-b1": "9GkWITVT6cHnG21C8WpY0YpvbwX0frjBBnTr6yG986w=",
+      "hex": "f46916213553e9c1e71b6d42f16a58d18a6f6f05f47eb8c10674ebeb21bdf3ac",
+      "equal": true
+    },
+    {
+      "raw_key_id": "qlink-ab:22925200",
+      "qkd-a2": "5+K79DcA3K5Qp3iqjr7/oV7X05Jjhj3KDNhkTQAmOUc=",
+      "qkd-b1": "5+K79DcA3K5Qp3iqjr7/oV7X05Jjhj3KDNhkTQAmOUc=",
+      "hex": "e7e2bbf43700dcae50a778aa8ebeffa15ed7d39263863dca0cd8644d00263947",
+      "equal": true
+    },
+    {
+      "raw_key_id": "qlink-ab:22925201",
+      "qkd-a2": "yioBMKfq8apOc/3jPQsDnkBPabG3BD/isqav74CR+2s=",
+      "qkd-b1": "yioBMKfq8apOc/3jPQsDnkBPabG3BD/isqav74CR+2s=",
+      "hex": "ca2a0130a7eaf1aa4e73fde33d0b039e404f69b1b7043fe2b2a6afef8091fb6b",
+      "equal": true
+    }
+  ]
+}

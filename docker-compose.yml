@@ -1,0 +1,151 @@
+# 저장소 루트에서 실행
+#   docker compose up -d --build                  → QKD 목업 4개
+#   docker compose --profile qkms up -d --build   → QKMS 4개 추가
+#
+# 고정 토폴로지
+#   양자 링크: qlink-a (a1-a2), qlink-ab (a2-b1), qlink-b (b1-b2)
+#   KM 링크  : km-a (a1-a2), km-ab (a2-b1), km-b (b1-b2)   ← QKMS 간 TLS
+#   제어     : ctrl (Q-SDN - 모든 QKMS)
+# QKD 쌍 사이에는 네트워크가 없다. 같은 seed 가 "양자 채널" 역할.
+
+x-qkd: &qkd
+  build: ./src/qkd
+  image: qkd-sim:latest
+
+x-qkms: &qkms
+  build: ./src/qkms
+  image: qkms:latest
+  profiles: [qkms]
+  stdin_open: true   # 콘솔 명령용 (docker attach)
+  tty: true
+
+x-qkd-env: &qkd-env
+  SIM_EPOCH: "1767225600"
+  KEY_BYTES: "32"
+  KEY_INTERVAL: "1.0"
+  ALIAS_PSK: "0000000000000000000000000000000000000000000000000000000000000007"
+  QKD_ALIAS: "QKD01"
+
+services:
+  qkd-a1:
+    <<: *qkd
+    environment:
+      <<: *qkd-env
+      QKD_NODE_ID: "11111111-0000-4000-8000-0000000000a1"
+      QKMS_URL: "http://qkms-a1:8080"   # 등록 성공 후 노드 정보 POST (QKMS 미기동 시 로그만 남음)
+      LINKS: |
+        [{"link_id": "qlink-a",
+          "seed": "a1a2a1a2a1a2a1a2a1a2a1a2a1a2a1a2a1a2a1a2a1a2a1a2a1a2a1a2a1a2a1a2",
+          "qkdi_id": "11111111-0000-4000-8000-1000000000a1",
+          "peer_node_id": "11111111-0000-4000-8000-0000000000a2",
+          "peer_qkdi_id": "11111111-0000-4000-8000-1000000000a2",
+          "role": "transmitter"}]
+    networks: [node-a1]
+    ports: ["18081:8080"]   # 호스트에서 /sim 제어·디버깅용
+
+  qkd-a2:
+    <<: *qkd
+    environment:
+      <<: *qkd-env
+      QKD_NODE_ID: "11111111-0000-4000-8000-0000000000a2"
+      QKMS_URL: "http://qkms-a2:8080"   # 등록 성공 후 노드 정보 POST (QKMS 미기동 시 로그만 남음)
+      LINKS: |
+        [{"link_id": "qlink-a",
+          "seed": "a1a2a1a2a1a2a1a2a1a2a1a2a1a2a1a2a1a2a1a2a1a2a1a2a1a2a1a2a1a2a1a2",
+          "qkdi_id": "11111111-0000-4000-8000-1000000000a2",
+          "peer_node_id": "11111111-0000-4000-8000-0000000000a1",
+          "peer_qkdi_id": "11111111-0000-4000-8000-1000000000a1",
+          "role": "receiver"},
+         {"link_id": "qlink-ab",
+          "seed": "abababababababababababababababababababababababababababababababab",
+          "qkdi_id": "11111111-0000-4000-8000-2000000000a2",
+          "peer_node_id": "22222222-0000-4000-8000-0000000000b1",
+          "peer_qkdi_id": "22222222-0000-4000-8000-2000000000b1",
+          "role": "transmitter"}]
+    networks: [node-a2]
+    ports: ["18082:8080"]
+
+  qkd-b1:
+    <<: *qkd
+    environment:
+      <<: *qkd-env
+      QKD_NODE_ID: "22222222-0000-4000-8000-0000000000b1"
+      QKMS_URL: "http://qkms-b1:8080"   # 등록 성공 후 노드 정보 POST (QKMS 미기동 시 로그만 남음)
+      LINKS: |
+        [{"link_id": "qlink-ab",
+          "seed": "abababababababababababababababababababababababababababababababab",
+          "qkdi_id": "22222222-0000-4000-8000-2000000000b1",
+          "peer_node_id": "11111111-0000-4000-8000-0000000000a2",
+          "peer_qkdi_id": "11111111-0000-4000-8000-2000000000a2",
+          "role": "receiver"},
+         {"link_id": "qlink-b",
+          "seed": "b1b2b1b2b1b2b1b2b1b2b1b2b1b2b1b2b1b2b1b2b1b2b1b2b1b2b1b2b1b2b1b2",
+          "qkdi_id": "22222222-0000-4000-8000-1000000000b1",
+          "peer_node_id": "22222222-0000-4000-8000-0000000000b2",
+          "peer_qkdi_id": "22222222-0000-4000-8000-1000000000b2",
+          "role": "transmitter"}]
+    networks: [node-b1]
+    ports: ["18083:8080"]
+
+  qkd-b2:
+    <<: *qkd
+    environment:
+      <<: *qkd-env
+      QKD_NODE_ID: "22222222-0000-4000-8000-0000000000b2"
+      QKMS_URL: "http://qkms-b2:8080"   # 등록 성공 후 노드 정보 POST (QKMS 미기동 시 로그만 남음)
+      LINKS: |
+        [{"link_id": "qlink-b",
+          "seed": "b1b2b1b2b1b2b1b2b1b2b1b2b1b2b1b2b1b2b1b2b1b2b1b2b1b2b1b2b1b2b1b2",
+          "qkdi_id": "22222222-0000-4000-8000-1000000000b2",
+          "peer_node_id": "22222222-0000-4000-8000-0000000000b1",
+          "peer_qkdi_id": "22222222-0000-4000-8000-1000000000b1",
+          "role": "receiver"}]
+    networks: [node-b2]
+    ports: ["18084:8080"]
+
+  # --- QKMS (직접 구현, profile: qkms) ---
+  qkms-a1:
+    <<: *qkms
+    environment:
+      QKMS_NODE: a1
+      QKD_URL: "http://qkd-a1:8080"
+    networks: [node-a1, km-a, ctrl]
+
+  qkms-a2:
+    <<: *qkms
+    environment:
+      QKMS_NODE: a2
+      QKD_URL: "http://qkd-a2:8080"
+    networks: [node-a2, km-a, km-ab, ctrl]
+
+  qkms-b1:
+    <<: *qkms
+    environment:
+      QKMS_NODE: b1
+      QKD_URL: "http://qkd-b1:8080"
+    networks: [node-b1, km-ab, km-b, ctrl]
+
+  qkms-b2:
+    <<: *qkms
+    environment:
+      QKMS_NODE: b2
+      QKD_URL: "http://qkd-b2:8080"
+    networks: [node-b2, km-b, ctrl]
+
+  # --- Q-SDN (Phase 2에서 추가) ---
+  # qsdn:
+  #   build: ./src/qsdn
+  #   profiles: [qkms]
+  #   stdin_open: true
+  #   tty: true
+  #   networks: [ctrl]
+
+networks:
+  node-a1: {}   # QKD-a1 <-> QKMS-a1 (노드 내부, TTAK 0225)
+  node-a2: {}
+  node-b1: {}
+  node-b2: {}
+  km-a: {}      # QKMS-a1 <-> QKMS-a2 (TLS)
+  km-ab: {}     # QKMS-a2 <-> QKMS-b1 (TLS, 도메인 간)
+  km-b: {}      # QKMS-b1 <-> QKMS-b2 (TLS)
+  ctrl: {}      # Q-SDN <-> 모든 QKMS

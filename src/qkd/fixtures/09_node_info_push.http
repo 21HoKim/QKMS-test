@@ -1,0 +1,9 @@
+POST /QKD_API/data/qkd-node:qkd_node HTTP/1.1
+Host: qkms-a2:8080
+Content-Type: application/yang-data+json
+Accept: */*
+Accept-Encoding: gzip, deflate
+User-Agent: Python/3.12 aiohttp/3.14.3
+Content-Length: 966
+
+{"qkd-node:qkd_node": {"qkd_node_id": "11111111-0000-4000-8000-0000000000a2", "qkd_interfaces": [{"qkdi_id": "11111111-0000-4000-8000-1000000000a2", "capabilities": {"role_support": "receiver"}, "interface_status": {"operation_status": "ACT", "admin_status": "ACT"}}, {"qkdi_id": "11111111-0000-4000-8000-2000000000a2", "capabilities": {"role_support": "transmitter"}, "interface_status": {"operation_status": "ACT", "admin_status": "ACT"}}], "qkd_links": [{"local": {"interface": "11111111-0000-4000-8000-1000000000a2"}, "remote": {"qkd_node": "11111111-0000-4000-8000-0000000000a1", "interface": "11111111-0000-4000-8000-1000000000a1"}, "performance": {"skr": 256, "eskr": 256}, "link_attribute": "Quantum"}, {"local": {"interface": "11111111-0000-4000-8000-2000000000a2"}, "remote": {"qkd_node": "22222222-0000-4000-8000-0000000000b1", "interface": "22222222-0000-4000-8000-2000000000b1"}, "performance": {"skr": 256, "eskr": 256}, "link_attribute": "Quantum"}]}}

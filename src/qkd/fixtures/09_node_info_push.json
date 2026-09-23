@@ -1,0 +1,57 @@
+{
+  "qkd-node:qkd_node": {
+    "qkd_node_id": "11111111-0000-4000-8000-0000000000a2",
+    "qkd_interfaces": [
+      {
+        "qkdi_id": "11111111-0000-4000-8000-1000000000a2",
+        "capabilities": {
+          "role_support": "receiver"
+        },
+        "interface_status": {
+          "operation_status": "ACT",
+          "admin_status": "ACT"
+        }
+      },
+      {
+        "qkdi_id": "11111111-0000-4000-8000-2000000000a2",
+        "capabilities": {
+          "role_support": "transmitter"
+        },
+        "interface_status": {
+          "operation_status": "ACT",
+          "admin_status": "ACT"
+        }
+      }
+    ],
+    "qkd_links": [
+      {
+        "local": {
+          "interface": "11111111-0000-4000-8000-1000000000a2"
+        },
+        "remote": {
+          "qkd_node": "11111111-0000-4000-8000-0000000000a1",
+          "interface": "11111111-0000-4000-8000-1000000000a1"
+        },
+        "performance": {
+          "skr": 256,
+          "eskr": 256
+        },
+        "link_attribute": "Quantum"
+      },
+      {
+        "local": {
+          "interface": "11111111-0000-4000-8000-2000000000a2"
+        },
+        "remote": {
+          "qkd_node": "22222222-0000-4000-8000-0000000000b1",
+          "interface": "22222222-0000-4000-8000-2000000000b1"
+        },
+        "performance": {
+          "skr": 256,
+          "eskr": 256
+        },
+        "link_attribute": "Quantum"
+      }
+    ]
+  }
+}
