@@ -1,2 +1,2 @@
 all: main.cpp
-	g++ -o ../../build/main main.cpp -std=c++17 -Wall
+	g++ -o ../../build/main main.cpp -std=c++17 -Wall -lsoci_core -lsoci_mysql
