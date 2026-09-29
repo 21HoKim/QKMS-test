@@ -25,8 +25,9 @@
   - 확장자: 소스 .cpp, 헤더 .hpp
   - 헤더 첫 줄: #pragma once
   - using namespace: .cpp에서만 허용, 헤더에서 금지
-  - #include 순서: 표준 라이브러리 -> 외부 라이브러리(Boost 등)
-    -> 프로젝트 헤더, 그룹 사이 빈 줄 1개
+  - #include 순서: clang-format 자동 정렬 결과
+    (Google 스타일은 <...> 헤더를 표준/Boost 구분 없이 한 그룹으로 정렬,
+     프로젝트 헤더 "..." 는 별도 그룹)
   - 프로젝트 코드 위치: namespace qkms { ... } 내부
 
 
