@@ -12,14 +12,14 @@ namespace qkms {
 
 constexpr int MAX_COMMAND_COUNT = 100000;
 
-// 사용 가능한 콘솔 명령 목록을 출력한다.
+// 사용 가능한 콘솔 명령 목록 출력
 void print_command_list() {
   cout << "command list" << endl;
   cout << "status: print status value" << endl;
   cout << "keys: print the number of keys and status for each link" << endl;
 }
 
-// 콘솔 명령을 읽어 처리한다. "quit" 입력 시 반환한다.
+// 콘솔 명령 입력 및 처리, "quit" 입력 시 반환
 void run_console() {
   string command;
 
@@ -41,7 +41,7 @@ void run_console() {
   }
 }
 
-// host:port 로 TCP 연결한다. 성공하면 sock 이 연결된 상태가 된다.
+// host:port TCP 연결, 성공 시 sock 연결 상태
 boost::system::error_code connect_to(tcp::resolver& resolver,
                                      const string& host, const string& port,
                                      tcp::socket& sock) {
@@ -56,7 +56,7 @@ boost::system::error_code connect_to(tcp::resolver& resolver,
   return ec;
 }
 
-// 원시키 구독 요청(HTTP GET) 문자열을 만든다. (TTAK.KO-01.0225 7.9.5)
+// 원시키 구독 요청(HTTP GET) 문자열 생성 (TTAK.KO-01.0225 7.9.5)
 string make_subscribe_request(const string& host, const string& port) {
   string request;
 
