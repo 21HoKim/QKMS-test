@@ -1,7 +1,7 @@
 #include<array>
 #include<iostream>
 #include<boost/asio.hpp>
-#include<string.h>
+#include<string>
 
 
 using boost::asio::ip::tcp;
