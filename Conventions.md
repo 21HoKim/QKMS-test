@@ -119,7 +119,7 @@
 
       constexpr std::size_t READ_BUF_BYTES = 1024;
 
-      // host:port 로 TCP 연결한다. 성공하면 sock 이 연결된 상태가 된다.
+      // host:port TCP 연결, 성공 시 sock 연결 상태
       boost::system::error_code connect_to(tcp::resolver& resolver,
                                            const std::string& host,
                                            const std::string& port,
@@ -153,6 +153,8 @@
 
 
 8. 주석
+  - 형식: 명사로 끝나는 개조식 ("~한다", "~이다" 등 서술형 종결 미사용)
+      예) // 원시키 구독 요청 문자열 생성
   - 내용: 코드가 무엇을 하는지 기술, 어떻게 하는지는 미기술 (커널 8절)
   - 함수 주석 위치: 함수 선언 바로 위
   - 함수 주석 내용: 동작, 인자, 반환값의 의미
