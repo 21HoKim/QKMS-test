@@ -60,8 +60,8 @@ boost::system::error_code connect_socket(tcp::resolver& resolver,
 string make_subscribe_request(const string& host, const string& port) {
   string request;
 
-  request += "GET /QKD_API/data/";
-  request += /*TODO: Host header*/;
+  request += "POST /QKD_API/operations/qkdn-rpc-qkd-registration HTTP/1.1";
+  request += "qkd-a2:8080";
   request += "Accept: text/event-stream\r\n";
   request += "\r\n";
   return request;
