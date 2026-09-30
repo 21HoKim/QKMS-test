@@ -19,12 +19,12 @@ void print_command_list() {
   cout << "keys: print the number of keys and status for each link" << endl;
 }
 
-// 콘솔 명령 입력 및 처리, "quit" 입력 시 반환
+// 콘솔 명령 입력 및 처리
 void run_console() {
   string command;
 
   for (int i = 0; i < MAX_COMMAND_COUNT; i++) {
-    cout << "input command : ";
+    cout << "input command: ";
     cin >> command;
     cout << endl;
 
@@ -42,7 +42,7 @@ void run_console() {
 }
 
 // host:port TCP 연결, 성공 시 sock 연결 상태
-boost::system::error_code connect_to(tcp::resolver& resolver,
+boost::system::error_code connect_socket(tcp::resolver& resolver,
                                      const string& host, const string& port,
                                      tcp::socket& sock) {
   boost::system::error_code ec;
@@ -80,7 +80,7 @@ int main() {
   tcp::resolver resolver(io_context);
   tcp::socket sock(io_context);
 
-  boost::system::error_code ec = qkms::connect_to(resolver, host, port, sock);
+  boost::system::error_code ec = qkms::connect_socket(resolver, host, port, sock);
   if (ec) {
     cerr << "connect: " << ec.message() << endl;
     console_thread.join();
