@@ -109,11 +109,15 @@ int main() {
   string request = qkms::make_subscribe_request(host, port);
 
   // 동기 방식으로 연결 요청을 등록
-  asio::const_buffer buffer = asio::buffer(request);
-  qkms::send_request(buffer, sock);
+  asio::const_buffer req_buffer = asio::buffer(request);
+  qkms::send_request(req_buffer, sock);
 
-  /*TODO: read response*/
-  asio::read_until();
+  //HTTP 응답 수신
+  asio::streambuf res_buffer;
+  asio::read_until(sock, res_buffer, "\r\r", ec);
+  if(ec){
+    qkms::print_error(ec);
+  }
 
   console_thread.join();
   return 0;
