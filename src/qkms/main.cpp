@@ -12,6 +12,13 @@ namespace qkms {
 
 constexpr int MAX_COMMAND_COUNT = 100000;
 
+void print_error(boost::system::error_code ec) {
+  cout << "error: " << ec.message() << endl;
+  cout << "message: " << ec.message() << endl;
+  cout << "value: " << ec.value() << endl;
+  cout << "category: " << ec.category().name() << endl;
+}
+
 // 사용 가능한 콘솔 명령 목록 출력
 void print_command_list() {
   cout << "command list" << endl;
@@ -43,8 +50,8 @@ void run_console() {
 
 // host:port TCP 연결, 성공 시 sock 연결 상태
 boost::system::error_code connect_socket(tcp::resolver& resolver,
-                                     const string& host, const string& port,
-                                     tcp::socket& sock) {
+                                         const string& host, const string& port,
+                                         tcp::socket& sock) {
   boost::system::error_code ec;
 
   tcp::resolver::results_type endpoints = resolver.resolve(host, port, ec);
@@ -80,9 +87,10 @@ int main() {
   tcp::resolver resolver(io_context);
   tcp::socket sock(io_context);
 
-  boost::system::error_code ec = qkms::connect_socket(resolver, host, port, sock);
+  boost::system::error_code ec;
+  ec = qkms::connect_socket(resolver, host, port, sock);
   if (ec) {
-    cerr << "connect: " << ec.message() << endl;
+    print_error(ec);
     console_thread.join();
     return 1;
   }
@@ -90,6 +98,7 @@ int main() {
 
   string request = qkms::make_subscribe_request(host, port);
   /*TODO: send request*/
+  
 
   /*TODO: read response*/
 
