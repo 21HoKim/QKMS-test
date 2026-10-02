@@ -1,6 +1,6 @@
 # 망 구성
 
-![](topology.png)
+![](topology.jpg)
 
 
 # 소개
