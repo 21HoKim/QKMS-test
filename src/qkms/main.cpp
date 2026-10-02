@@ -63,16 +63,6 @@ boost::system::error_code connect_socket(tcp::resolver& resolver,
   return ec;
 }
 
-//동기 방식으로 연결 요청 전송
-boost::system::error_code send_request(asio::const_buffer& buffer, tcp::socket& sock){
-  boost::system::error_code ec;
-  asio::write(sock, buffer, ec);
-  if(ec){
-    qkms::print_error(ec);
-  }
-  
-}
-
 // 원시키 구독 요청(HTTP GET) 문자열 생성 (TTAK.KO-01.0225 7.9.5)
 string make_subscribe_request(const string& host, const string& port) {
   string request;
@@ -82,6 +72,16 @@ string make_subscribe_request(const string& host, const string& port) {
   request += "Accept: text/event-stream\r\n";
   request += "\r\n";
   return request;
+}
+
+// 동기 방식으로 연결 요청 전송
+boost::system::error_code send_request(asio::const_buffer& buffer,
+                                       tcp::socket& sock) {
+  boost::system::error_code ec;
+  asio::write(sock, buffer, ec);
+  if (ec) {
+    qkms::print_error(ec);
+  }
 }
 
 }  // namespace qkms
@@ -108,11 +108,13 @@ int main() {
 
   string request = qkms::make_subscribe_request(host, port);
 
-  //동기 방식으로 연결 요청을 등록
-  asio::const_buffer buffer = asio::buffer(request); 
+  // 동기 방식으로 연결 요청을 등록
+  asio::const_buffer buffer = asio::buffer(request);
   qkms::send_request(buffer, sock);
-  
+
   /*TODO: read response*/
+  asio::read_until();
+
   console_thread.join();
   return 0;
 }
