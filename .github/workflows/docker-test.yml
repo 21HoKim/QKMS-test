@@ -1,0 +1,84 @@
+# QKD 목업 + QKMS 도커 통합 점검
+#
+#   mock-test   : 도커 없이 QKD 목업만 로컬 프로세스로 띄워 test_qkd.py 실행 (./dev.sh local)
+#   docker-check: 로컬과 같은 ./dev.sh check 실행 (전체 빌드·기동 → 목업 테스트 → QKMS 컨테이너 점검)
+#
+# 두 잡을 나눠 두면, QKMS가 미완성이라 docker-check가 실패해도
+# 목업(qkd_sim.py)이 깨진 건지 QKMS 쪽 문제인지 바로 구분된다.
+
+name: Docker Test
+
+on:
+  push:
+    branches: [ "main" ]
+    paths-ignore:
+      - "documents/**"
+      - "**.md"
+      - "**.png"
+      - "**.jpg"
+  pull_request:
+    branches: [ "main" ]
+    paths-ignore:
+      - "documents/**"
+      - "**.md"
+      - "**.png"
+      - "**.jpg"
+  workflow_dispatch:   # Actions 탭에서 수동 실행
+
+# 같은 브랜치에 연달아 push 하면 이전 실행은 취소
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  mock-test:
+    name: QKD 목업 테스트 (도커 없이)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"   # src/qkd/Dockerfile 과 같은 버전
+
+      - name: 테스트 의존성 설치
+        run: pip install aiohttp cryptography pyyaml
+
+      - name: 목업 테스트
+        run: ./dev.sh local
+
+      - name: 실패 시 목업 로그 출력
+        if: failure()
+        run: tail -n +1 /tmp/qkd-sim-logs/* || true
+
+  docker-check:
+    name: 도커 전체 점검 (./dev.sh check)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      # test_qkd.py 는 호스트에서 실행되어 18081~18084 포트로 목업에 접속한다
+      - name: 테스트 의존성 설치
+        run: pip install aiohttp cryptography pyyaml
+
+      - name: 전체 점검
+        run: ./dev.sh check
+
+      - name: 실패 시 컨테이너 상태·로그 출력
+        if: failure()
+        run: |
+          docker compose --profile qkms ps -a || true
+          docker compose --profile qkms logs --no-color --tail=200 || true
+
+      - name: 정리
+        if: always()
+        run: docker compose --profile qkms down -v || true
