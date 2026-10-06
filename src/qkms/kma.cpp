@@ -8,20 +8,13 @@ using namespace std;
 
 namespace kma {
 
-boost::system::error_code ec;
-
-void print_error(boost::system::error_code ec) {
-  cout << "error occurred!" << endl;
-  cout << "value: " << ec.value() << endl;
-  cout << "category: " << ec.category().name() << endl;
-  cout << "message: " << ec.message() << endl;
-  cout << ec.default_error_condition() << endl;
-}
-
-// host:port TCP 연결, 성공 시 sock 연결 상태
+// host:port TCP 연결
+// resolver: 주소 변환기, host/port: 접속 대상, sock: 연결 대상 소켓(출력)
+// 반환: 성공 시 빈 error_code, 실패 시 에러 정보
 boost::system::error_code connect_socket(tcp::resolver& resolver,
                                          const string& host, const string& port,
                                          tcp::socket& sock) {
+  boost::system::error_code ec;
   tcp::resolver::results_type endpoints = resolver.resolve(host, port, ec);
   if (ec) {
     return ec;
@@ -32,31 +25,40 @@ boost::system::error_code connect_socket(tcp::resolver& resolver,
 }
 
 // QKD 등록 요청(HTTP POST) 문자열 생성
+// host/port: Host 헤더에 기록할 접속 대상
+// 반환: 헤더와 본문을 포함한 요청 문자열
 string make_registration_request(const string& host, const string& port) {
   string request;
-  string body = /*TODO*/{};
+  string body = /*TODO*/ {};
   request += "POST /QKD_API/operations/qkdn-rpc-qkd-registration HTTP/1.1\r\n";
   request += "Host: " + host + ":" + port + "\r\n";
   request += "Content-Type: application/yang-data+json\r\n";
   request += "Accept: application/yang-data+json\r\n";
   request += "Connection: close\r\n";
-  request += "Content-Length: " + to_string(body.size());
-  request += "\r\n";  // end Header
+  request += "Content-Length: " + to_string(body.size()) + "\r\n";
+  request += "\r\n";  // 헤더 종료
   request += body;
   return request;
 }
 
 // 동기 방식으로 연결 요청 전송
-boost::system::error_code send_request(asio::const_buffer& buffer,
+// buffer: 전송할 요청 데이터, sock: 연결된 소켓
+// 반환: 성공 시 빈 error_code, 실패 시 에러 정보
+boost::system::error_code send_request(const asio::const_buffer& buffer,
                                        tcp::socket& sock) {
+  boost::system::error_code ec;
   asio::write(sock, buffer, ec);
   return ec;
 }
 
-// 응답 헤더 수신 및 상태 줄 검증, 성공 시 헤더 이후 바이트 buf에 유지
+// 응답 헤더 수신 및 상태 줄 검증
+// sock: 연결된 소켓, buf: 수신 버퍼(성공 시 헤더 이후 바이트 유지),
+// status_code: HTTP 상태 코드(출력)
+// 반환: 성공 시 빈 error_code, 실패 시 에러 정보
 boost::system::error_code read_response_head(tcp::socket& sock,
                                              asio::streambuf& buf,
                                              int& status_code) {
+  boost::system::error_code ec;
   asio::read_until(sock, buf, "\r\n\r\n", ec);
   if (ec) {
     return ec;
@@ -76,15 +78,18 @@ boost::system::error_code read_response_head(tcp::socket& sock,
   return ec;
 }
 
-int start_connect(const string host, const string port) {
+// QKD 등록 요청 전송 및 응답 수신
+// host/port: 접속 대상
+// 반환: 성공 시 빈 error_code, 실패 시 에러 정보
+boost::system::error_code start_connect(const string& host,
+                                        const string& port) {
   asio::io_context io_context;
   tcp::resolver resolver(io_context);
   tcp::socket sock(io_context);
-
+  boost::system::error_code ec;
   ec = kma::connect_socket(resolver, host, port, sock);
   if (ec) {
-    kma::print_error(ec);
-    return -1;
+    return ec;
   }
   cout << "connected" << endl;
 
@@ -94,8 +99,7 @@ int start_connect(const string host, const string port) {
   asio::const_buffer req_buffer = asio::buffer(request);
   ec = kma::send_request(req_buffer, sock);
   if (ec) {
-    kma::print_error(ec);
-    return -1;
+    return ec;
   }
 
   // HTTP 응답 수신
@@ -103,13 +107,12 @@ int start_connect(const string host, const string port) {
   int status;
   ec = kma::read_response_head(sock, res_buffer, status);
   if (ec) {
-    kma::print_error(ec);
-    return -1;
+    return ec;
   }
 
   // 200 OK일 경우
 
-  return 0;
+  return ec;
 }
 
 }  // namespace kma

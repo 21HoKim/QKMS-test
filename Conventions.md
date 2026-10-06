@@ -28,7 +28,7 @@
   - #include 순서: clang-format 자동 정렬 결과
     (Google 스타일은 <...> 헤더를 표준/Boost 구분 없이 한 그룹으로 정렬,
      프로젝트 헤더 "..." 는 별도 그룹)
-  - 프로젝트 코드 위치: namespace qkms { ... } 내부
+  - 프로젝트 코드 위치: 각 코드의 "name".cpp namespace "name" 내부
 
 
 3. 이름
@@ -111,7 +111,7 @@
   - 실패 가능한 프로젝트 함수: boost::system::error_code 반환,
     결과는 출력용 참조 인자로 전달
   - 검사 시점: 호출 직후 즉시 검사, if (ec) 가 참이면 에러
-  - 에러 메시지: ec.message()
+  - 에러 메시지: ec.value(), ec.category(), ec.message(), ec.default_error_condition()
   - 최종 처리 위치: main, 0이 아닌 값 반환
   - 예시 (clang-format 적용 결과와 동일)
 
