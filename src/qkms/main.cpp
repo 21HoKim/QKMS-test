@@ -13,10 +13,11 @@ namespace qkms {
 constexpr int MAX_COMMAND_COUNT = 100000;
 
 void print_error(boost::system::error_code ec) {
-  cout << "error: " << ec.message() << endl;
-  cout << "message: " << ec.message() << endl;
+  cout << "error occurred!" << endl;
   cout << "value: " << ec.value() << endl;
   cout << "category: " << ec.category().name() << endl;
+  cout << "message: " << ec.message() << endl;
+  cout << ec.default_error_condition() << endl;
 }
 
 // 사용 가능한 콘솔 명령 목록 출력
@@ -64,11 +65,11 @@ boost::system::error_code connect_socket(tcp::resolver& resolver,
 }
 
 // 원시키 구독 요청(HTTP GET) 문자열 생성 (TTAK.KO-01.0225 7.9.5)
-string make_subscribe_request(const string& host, const string& port) {
+string registration_request(const string& host, const string& port) {
   string request;
 
   request += "POST /QKD_API/operations/qkdn-rpc-qkd-registration HTTP/1.1\r\n";
-  request += "qkd-a2:8080\r\n";
+  request += "Host: " + host + ":" + port + "\r\n";
   request += "Accept: text/event-stream\r\n";
   request += "\r\n";
   return request;
@@ -102,22 +103,31 @@ int main() {
   if (ec) {
     qkms::print_error(ec);
     console_thread.join();
-    return 1;
+    return -1;
   }
   cout << "connected" << endl;
 
-  string request = qkms::make_subscribe_request(host, port);
+  string request = qkms::registration_request(host, port);
 
   // 동기 방식으로 연결 요청을 등록
   asio::const_buffer req_buffer = asio::buffer(request);
-  qkms::send_request(req_buffer, sock);
-
-  //HTTP 응답 수신
-  asio::streambuf res_buffer;
-  asio::read_until(sock, res_buffer, "\r\r", ec);
-  if(ec){
+  ec = qkms::send_request(req_buffer, sock);
+  if (ec) {
     qkms::print_error(ec);
+    console_thread.join();
+    return -1;
   }
+
+  // HTTP 응답 수신
+  asio::streambuf res_buffer;
+  asio::read_until(sock, res_buffer, "\r\n\r\n", ec);
+  if (ec) {
+    qkms::print_error(ec);
+    console_thread.join();
+    return -1;
+  }
+
+  // 200 OK일 경우
 
   console_thread.join();
   return 0;
