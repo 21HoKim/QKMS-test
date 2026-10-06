@@ -1,12 +1,8 @@
 #pragma once
-#include <array>
 #include <boost/asio.hpp>
-#include <boost/beast.hpp>
-#include <boost/json.hpp>
-#include <iostream>
 #include <string>
 
-namespace kma {
+namespace qkms::kma {
 
 boost::system::error_code connect_socket(
     boost::asio::ip::tcp::resolver& resolver, const std::string& host,
@@ -24,4 +20,4 @@ boost::system::error_code read_response_head(boost::asio::ip::tcp::socket& sock,
 
 boost::system::error_code start_connect(const std::string& host,
                                         const std::string& port);
-}  // namespace kma
+}  // namespace qkms::kma

@@ -28,7 +28,7 @@
   - #include 순서: clang-format 자동 정렬 결과
     (Google 스타일은 <...> 헤더를 표준/Boost 구분 없이 한 그룹으로 정렬,
      프로젝트 헤더 "..." 는 별도 그룹)
-  - 프로젝트 코드 위치: 각 코드의 "name".cpp namespace "name" 내부
+  - 프로젝트 코드 위치: 각 코드의 "name".cpp namespace "name" 내부, 기능별 트리구조 (qkms::kma, qkms::kms 등), main 제외
 
 
 3. 이름

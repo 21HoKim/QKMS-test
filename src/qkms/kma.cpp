@@ -1,12 +1,15 @@
 #include "kma.hpp"
 
+#include <boost/json.hpp>
+#include <iostream>
+
 namespace asio = boost::asio;
 // namespace http = beast::http;
 namespace json = boost::json;
 using asio::ip::tcp;
 using namespace std;
 
-namespace kma {
+namespace qkms::kma {
 
 // host:port TCP 연결
 // resolver: 주소 변환기, host/port: 접속 대상, sock: 연결 대상 소켓(출력)
@@ -115,4 +118,4 @@ boost::system::error_code start_connect(const string& host,
   return ec;
 }
 
-}  // namespace kma
+}  // namespace qkms::kma

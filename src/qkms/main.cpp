@@ -51,7 +51,7 @@ int main() {
 
   qkms::print_command_list();
   thread console_thread(qkms::run_console);
-  boost::system::error_code ec = kma::start_connect(host, port);
+  boost::system::error_code ec = qkms::kma::start_connect(host, port);
   if (ec) {
     qkms::print_error(ec);
     console_thread.join();
