@@ -1,10 +1,11 @@
 #include "kma.hpp"
 
+#include <boost/beast.hpp>
 #include <boost/json.hpp>
 #include <iostream>
 
 namespace asio = boost::asio;
-// namespace http = beast::http;
+namespace http = boost::beast::http;
 namespace json = boost::json;
 using asio::ip::tcp;
 using namespace std;
