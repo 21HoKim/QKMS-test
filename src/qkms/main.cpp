@@ -6,6 +6,9 @@
 using namespace std;
 
 namespace qkms {
+
+static string status;
+
 void print_error(const boost::system::error_code& ec) {
   cout << "error occurred!" << endl;
   cout << "value: " << ec.value() << endl;
@@ -51,7 +54,7 @@ int main() {
 
   qkms::print_command_list();
   thread console_thread(qkms::run_console);
-  boost::system::error_code ec = qkms::kma::start_connect(host, port);
+  boost::system::error_code ec = qkms::kma::register_qkd(host, port);
   if (ec) {
     qkms::print_error(ec);
     console_thread.join();
