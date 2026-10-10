@@ -18,6 +18,7 @@ x-qkms: &qkms
   profiles: [qkms]
   stdin_open: true   # 콘솔 명령용 (docker attach)
   tty: true
+  init: true         # PID 1 대신 init 이 신호 전달 → docker stop 즉시 종료
 
 x-qkd-env: &qkd-env
   SIM_EPOCH: "1767225600"

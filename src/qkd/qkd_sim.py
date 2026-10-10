@@ -135,18 +135,19 @@ def interface_info(link):
 
 
 def node_info():
-    # 간략화 버전. 7.2 qkd-node 모듈 표를 보고 필드명/구조를 맞춰 채울 것
-    # (특히 qkd_node_id, qkd_links, local 키 이름은 표 확인 필요).
+    # 7.2 qkd-node 모듈(표 7-2~7-5)과 7.9.2 예시 구조를 따름. 예시에 있는 필드만 채움.
+    # 가정: link_id 는 표준상 uuid 이지만 raw_key_id 접두어로도 쓰므로 목업의 링크 이름을 그대로 씀
     links = []
     for l in LINKS.values():
         skr = int(KEY_BYTES * 8 / KEY_INTERVAL) if l.up else 0
         links.append({
-            "local": {"interface": l.qkdi_id},
+            "link_id": l.link_id,
+            "local": {"qkd_node": NODE_ID, "interface": l.qkdi_id},
             "remote": {"qkd_node": l.peer_node_id, "interface": l.peer_qkdi_id},
             "performance": {"skr": skr, "eskr": skr},
             "link_attribute": "Quantum"})
     return {"qkd-node:qkd_node": {
-        "qkd_node_id": NODE_ID,
+        "qkd_node_address": {"id": NODE_ID, "alias": QKD_ALIAS},
         "qkd_interfaces": [interface_info(l) for l in LINKS.values()],
         "qkd_links": links}}
 
@@ -190,6 +191,7 @@ async def raw_key_stream(request):
     while pending:                      # 밀린 키 먼저
         q.put_nowait(pending.popleft())
     subscribers.add(q)
+    n = None                            # 꺼냈지만 아직 보내지 못한 키
     try:
         while True:
             try:
@@ -198,11 +200,12 @@ async def raw_key_stream(request):
                 await resp.write(b": keepalive\n\n")   # SSE 주석 줄, 수신측은 무시해야 함
                 continue
             await resp.write(sse_encode(n))
+            n = None
     except ConnectionResetError:
         pass
     finally:
         subscribers.discard(q)
-        left = []
+        left = [n] if n is not None else []     # 전송 중 끊긴 키도 되돌림
         while not q.empty():
             left.append(q.get_nowait())
         pending.extendleft(reversed(left))       # 못 보낸 키는 다음 구독자에게

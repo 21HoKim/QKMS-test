@@ -173,6 +173,11 @@ async def t_node_info(s, nodes, res):
         async with s.get(f"{n.base}/QKD_API/data/qkd-node:qkd_node") as r:
             node = (await r.json())["qkd-node:qkd_node"]
         res.check(len(node.get("qkd_links", [])) == len(n.links), f"{n.name}: 링크 정보 {len(n.links)}개")
+        addr_id = node.get("qkd_node_address", {}).get("id")
+        res.check(addr_id == n.node_id, f"{n.name}: qkd_node_address/id 일치")
+        want_ids = sorted(l["link_id"] for l in n.links)
+        got_ids = sorted(l.get("link_id", "") for l in node.get("qkd_links", []))
+        res.check(got_ids == want_ids, f"{n.name}: qkd_links/link_id {got_ids}")
 
 
 async def t_keys(s, nodes, res, seconds):
