@@ -1,7 +1,9 @@
 # QKD 목업 + QKMS 도커 통합 점검
 #
 #   mock-test   : 도커 없이 QKD 목업만 로컬 프로세스로 띄워 test_qkd.py 실행 (./dev.sh local)
-#   docker-check: 로컬과 같은 ./dev.sh check 실행 (전체 빌드·기동 → 목업 테스트 → QKMS 컨테이너 점검)
+#   docker-check: 로컬과 같은 ./dev.sh check 실행
+#                 (빌드 → 목업 기동 → QKMS 실제 등록·원시키 구독 확인 → 목업 테스트)
+#                 QKMS가 등록·구독을 못 하면 실패하고, 노드별로 어느 단계까지 됐는지 로그에 출력
 #
 # 두 잡을 나눠 두면, QKMS가 미완성이라 docker-check가 실패해도
 # 목업(qkd_sim.py)이 깨진 건지 QKMS 쪽 문제인지 바로 구분된다.

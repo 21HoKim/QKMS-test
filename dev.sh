@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # QKMS 개발용 도커·테스트 명령 모음. 저장소 루트에 두고 실행 (chmod +x dev.sh)
 #
-#   ./dev.sh check          전체 점검: 빌드 → 전체 기동 → 목업 테스트 → QKMS 컨테이너 점검
+#   ./dev.sh check          전체 점검: 빌드 → 목업 기동 → QKMS 등록·구독 확인 → 목업 테스트
 #   ./dev.sh up             QKD 목업 4개만 빌드·기동
 #   ./dev.sh up-all         목업 + QKMS 4개 빌드·기동
 #   ./dev.sh test           떠 있는 목업 대상으로 test_qkd.py 실행
@@ -105,19 +105,86 @@ check_qkms_reach() {
     return $rc
 }
 
+# 목업 /sim/status 에서 "registered subscribers" 출력 (조회 실패 시 빈 문자열)
+mock_link_state() {
+    curl -sf "http://127.0.0.1:$1/sim/status" 2>/dev/null \
+        | "$PY" -c 'import json,sys; d=json.load(sys.stdin); print(d["registered"], d["subscribers"])' \
+        2>/dev/null || true
+}
+
+# QKMS 로그에서 마지막으로 도달한 단계 (main.cpp 의 출력 기준)
+qkms_last_stage() {
+    local logs
+    logs="$(dc_all logs --no-color "qkms-$1" 2>/dev/null || true)"
+    if   grep -q "subscribed" <<<"$logs"; then echo "구독 완료(subscribed)"
+    elif grep -q "registered" <<<"$logs"; then echo "등록 완료(registered), 구독 전"
+    elif grep -q "connected"  <<<"$logs"; then echo "TCP 연결(connected), 등록 전"
+    elif grep -q "qkd: "      <<<"$logs"; then echo "시작됨, TCP 연결 전"
+    else echo "출력 없음 (실행 안 됨)"
+    fi
+}
+
+# QKMS ↔ 목업 실제 연결 확인: 목업이 등록 완료이고 구독자가 1 이상이어야 통과
+# 목업 테스트(test_qkd.py)도 등록을 하므로 반드시 그보다 먼저 실행해야 의미가 있음
+check_qkms_link() {
+    local deadline=$((SECONDS + 20)) i node port st done_all rc=0
+    local -A result=()
+    while :; do
+        done_all=1
+        for i in "${!QKMS_NODES[@]}"; do
+            node="${QKMS_NODES[$i]}"; port="${MOCK_PORTS[$i]}"
+            st="$(mock_link_state "$port")"
+            result[$node]="$st"
+            [[ "$st" == "True "[1-9]* ]] || done_all=0
+        done
+        (( done_all )) && break
+        (( SECONDS > deadline )) && break
+        sleep 1
+    done
+
+    for i in "${!QKMS_NODES[@]}"; do
+        node="${QKMS_NODES[$i]}"
+        st="${result[$node]}"
+        if [[ "$st" == "True "[1-9]* ]]; then
+            ok "qkms-${node} ↔ qkd-${node}: 등록 + 원시키 구독 연결"
+            continue
+        fi
+        rc=1
+        if [[ -z "$st" ]]; then
+            fail "qkms-${node}: 목업 qkd-${node} 상태 조회 실패"
+        elif [[ "$st" == False* ]]; then
+            fail "qkms-${node}: 등록 미완료 (목업 registered=false)"
+        else
+            fail "qkms-${node}: 등록은 됐지만 원시키 구독 연결 없음 (목업 subscribers=0)"
+        fi
+        info "  컨테이너: $(docker inspect -f '{{.State.Status}} (exit {{.State.ExitCode}})' \
+            "$(dc_all ps -aq "qkms-${node}" | head -n1)" 2>/dev/null || echo '없음')"
+        info "  마지막 단계: $(qkms_last_stage "$node")"
+        info "  최근 로그:"
+        dc_all logs --no-color --tail=10 "qkms-${node}" 2>/dev/null | sed 's/^/      /' || true
+    done
+    return $rc
+}
+
 cmd_check() {
     need_docker
-    local rc=0
-    info "1/4 이미지 빌드 및 전체 기동"
-    dc_all up -d --build
-    info "2/4 목업 준비 대기"
+    local rc=0 node services=()
+    for node in "${QKMS_NODES[@]}"; do services+=("qkms-${node}"); done
+
+    info "1/5 이미지 빌드 (QKMS 컴파일 포함)"
+    dc_all build
+    info "2/5 목업 새로 기동 (이전 등록 상태 초기화)"
+    dc_all rm -sf "${services[@]}" >/dev/null 2>&1 || true
+    dc up -d --force-recreate
     wait_mocks || return 1
-    info "3/4 목업 테스트"
-    run_mock_test || rc=1
-    info "4/4 QKMS 컨테이너 점검"
-    show_qkms_state
+    info "3/5 QKMS 기동 및 목업 연결 확인"
     check_qkms_reach || rc=1
-    echo
+    dc_all up -d --no-deps "${services[@]}"
+    check_qkms_link || rc=1
+    show_qkms_state
+    info "4/5 목업 테스트"
+    run_mock_test || rc=1
+    info "5/5 결과"
     if (( rc == 0 )); then
         ok "전체 점검 통과 (종료: ./dev.sh down)"
     else

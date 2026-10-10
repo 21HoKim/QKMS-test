@@ -31,9 +31,17 @@ std::string make_subscribe_request(const std::string& host,
                                    const std::string& port);
 
 boost::system::error_code read_subscribe_header(
-    tcp::socket& sock, boost::beast::flat_buffer& buf,
-    http::response_parser<http::buffer_body>& parser);
+    boost::asio::ip::tcp::socket& sock, boost::beast::flat_buffer& buf,
+    boost::beast::http::response_parser<boost::beast::http::buffer_body>&
+        parser);
 
 boost::system::error_code register_qkd(const std::string& host,
                                        const std::string& port);
+
+boost::system::error_code subscribe_raw_key(
+    boost::asio::ip::tcp::resolver& resolver, const std::string& host,
+    const std::string& port, boost::asio::ip::tcp::socket& sock,
+    boost::beast::flat_buffer& buf,
+    boost::beast::http::response_parser<boost::beast::http::buffer_body>&
+        parser);
 }  // namespace qkms::kma

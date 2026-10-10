@@ -131,6 +131,7 @@ boost::system::error_code read_response(tcp::socket& sock,
 std::string make_subscribe_request(const string& host, const string& port) {
   http::request<http::empty_body> req;
   req.method(http::verb::get);
+  req.target("/QKD_API/data/kt-qkd-node:raw-key");
   req.version(11);
   req.set(http::field::host, host + ":" + port);
   req.set(http::field::accept, "text/event-stream");
@@ -140,6 +141,27 @@ std::string make_subscribe_request(const string& host, const string& port) {
   ostringstream oss;
   oss << req;
   return oss.str();
+}
+
+// 구독 응답 헤더 수신 및 상태 검사
+// sock: 연결된 소켓, buf: 수신 버퍼(헤더 이후 바이트 유지),
+// parser: 응답 파서(계속 수신)
+// 반환: 성공 시 빈 error_code, 실패 시 에러 정보
+boost::system::error_code read_subscribe_header(
+    tcp::socket& sock, boost::beast::flat_buffer& buf,
+    http::response_parser<http::buffer_body>& parser) {
+  boost::system::error_code ec;
+  http::read_header(sock, buf, parser, ec);
+  if (ec) {
+    return ec;
+  }
+  if (parser.get().result() != http::status::ok) {
+    cout << "subscribe failed: " << parser.get().result_int() << endl;
+    ec = boost::system::errc::make_error_code(
+        boost::system::errc::permission_denied);
+    return ec;
+  }
+  return ec;
 }
 
 // QKD 등록 요청 전송 및 응답 수신
@@ -179,9 +201,31 @@ boost::system::error_code register_qkd(const string& host, const string& port) {
     return ec;
   }
 
-  // 원시키 구독
-  make_subscribe_request(host, port);
-  return ec;
+  // 소켓 종료
+  sock.shutdown(tcp::socket::shutdown_both, ec);
+  sock.close(ec);
+  return boost::system::error_code();
+}
+
+// 원시키 구독 시작 (새 연결, 요청 전송, 응답 헤더 확인)
+// resolver: 주소 변환기, host/port: 접속 대상, sock: 구독 연결(출력),
+// buf/parser: 이후 본문 수신에 쓸 버퍼와 파서(출력)
+// 반환: 성공 시 빈 error_code, 실패 시 에러 정보
+boost::system::error_code subscribe_raw_key(
+    tcp::resolver& resolver, const string& host, const string& port,
+    tcp::socket& sock, boost::beast::flat_buffer& buf,
+    http::response_parser<http::buffer_body>& parser) {
+  boost::system::error_code ec = connect_socket(resolver, host, port, sock);
+  if (ec) {
+    return ec;
+  }
+
+  string request = make_subscribe_request(host, port);
+  ec = send_request(asio::buffer(request), sock);
+  if (ec) {
+    return ec;
+  }
+  return read_subscribe_header(sock, buf, parser);
 }
 
 }  // namespace qkms::kma
